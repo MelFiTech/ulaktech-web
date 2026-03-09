@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useCardsScreenOptional } from "@/contexts/CardsScreenContext";
 
 const PAY_SUB_ITEMS = [
   { href: "/dashboard?pay=data", label: "Data" },
@@ -64,6 +65,8 @@ export function Sidebar() {
   const [payOpen, setPayOpen] = useState(false);
   const payParam = searchParams.get("pay");
   const isPayActive = pathname === "/dashboard" && !!payParam && payParam !== "exam-pin";
+  const cardsContext = useCardsScreenOptional();
+  const isCardsNewUserState = pathname === "/dashboard/cards" && cardsContext?.isNewUserState;
 
   return (
     <aside className="hidden h-screen w-[240px] shrink-0 flex-col overflow-hidden border-r border-[var(--border)] bg-[var(--surface)] lg:flex">
@@ -153,6 +156,7 @@ export function Sidebar() {
           if (!("href" in item)) return null;
           const href = item.href;
           const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+          const label = href === "/dashboard/cards" && isCardsNewUserState ? "Create virtual card" : item.label;
           return (
             <Link
               key={href}
@@ -166,7 +170,7 @@ export function Sidebar() {
               <span className={`shrink-0 ${isActive ? "text-[var(--tint)]" : "text-[var(--textSecondary)]"}`}>
                 {ICONS[item.icon]}
               </span>
-              {item.label}
+              {label}
             </Link>
           );
         })}

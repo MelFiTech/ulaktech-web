@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCardsScreenOptional } from "@/contexts/CardsScreenContext";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Home", icon: "home" },
@@ -43,6 +44,8 @@ const ICONS: Record<string, React.ReactNode> = {
 
 export function BottomNav() {
   const pathname = usePathname();
+  const cardsContext = useCardsScreenOptional();
+  const isCardsNewUserState = pathname === "/dashboard/cards" && cardsContext?.isNewUserState;
 
   return (
     <nav
@@ -52,6 +55,7 @@ export function BottomNav() {
       {NAV_ITEMS.map(({ href, label, icon }) => {
         const isActive =
           pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+        const displayLabel = href === "/dashboard/cards" && isCardsNewUserState ? "Create virtual card" : label;
         return (
           <Link
             key={href}
@@ -61,7 +65,7 @@ export function BottomNav() {
             }`}
           >
             <span className="shrink-0">{ICONS[icon]}</span>
-            <span className="truncate text-[10px] font-medium">{label}</span>
+            <span className="truncate text-[10px] font-medium">{displayLabel}</span>
           </Link>
         );
       })}

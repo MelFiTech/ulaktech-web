@@ -18,6 +18,7 @@ export type { ProfileTabId } from "./profile";
 export { VirtualCardDisplay } from "./VirtualCardDisplay";
 export { CardQuickActions } from "./CardQuickActions";
 export { ManageCardSection } from "./ManageCardSection";
+export { NewUserCardState } from "./NewUserCardState";
 export { CardsUpgradeBanner } from "./CardsUpgradeBanner";
 export {
   CardRecentTransactions,

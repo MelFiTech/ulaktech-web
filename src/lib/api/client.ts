@@ -4,17 +4,23 @@
  * All auth responses set cookies (access_token, refresh_token); use credentials: 'include'.
  */
 
-const getBaseUrl = () => {
-  if (typeof window !== "undefined") {
-    return process.env.NEXT_PUBLIC_API_URL ?? "";
+const getBaseUrl = (): string => {
+  const raw = process.env.NEXT_PUBLIC_API_URL ?? "";
+  let base = raw.replace(/\/$/, "").trim();
+  // Strip leading slash so " /host" is never used as same-origin path (e.g. Vercel 404)
+  if (base.startsWith("/")) base = base.slice(1);
+  if (!base) return "";
+  // If no protocol, browser would treat it as a relative path (e.g. on Vercel -> same-origin 404)
+  if (!/^https?:\/\//i.test(base)) {
+    return `https://${base}`;
   }
-  return process.env.NEXT_PUBLIC_API_URL ?? "";
+  return base;
 };
 
 export function getApiUrl(path: string): string {
-  const base = getBaseUrl().replace(/\/$/, "");
+  const base = getBaseUrl();
   const p = path.startsWith("/") ? path : `/${path}`;
-  return `${base}${p}`;
+  return base ? `${base}${p}` : p;
 }
 
 export interface ApiError {

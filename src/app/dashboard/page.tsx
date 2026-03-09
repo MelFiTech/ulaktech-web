@@ -24,6 +24,7 @@ import {
 import type { TransferOptionType } from "@/components/dashboard/modals/TransferChoiceModal";
 import { useProfilePrefs } from "@/contexts/ProfilePrefsContext";
 import { STORAGE_KEYS } from "@/lib/profileStorage";
+import { getMe } from "@/lib/api/auth";
 import { getWallet, listTransactions, invalidateWalletCache, getLastKnownBalance, type WalletTransaction } from "@/lib/api/wallet";
 
 const RECENT_LIMIT = 3;
@@ -51,6 +52,7 @@ export default function DashboardPage() {
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [recentTransactions, setRecentTransactions] = useState<WalletTransaction[]>([]);
   const [verificationModalOpen, setVerificationModalOpen] = useState(false);
+  const [verified, setVerified] = useState<boolean | null>(null);
 
   // Show last known balance immediately when returning to home; silent refetch updates it
   const initialBalance = (() => {
@@ -61,6 +63,10 @@ export default function DashboardPage() {
 
   const handleTransferChoice = (option: TransferOptionType) => {
     setTransferChoiceOpen(false);
+    if (verified !== true) {
+      setVerificationModalOpen(true);
+      return;
+    }
     if (option === "send") setTransferSendOpen(true);
     if (option === "withdrawToBank") setWithdrawModalOpen(true);
   };
@@ -91,12 +97,24 @@ export default function DashboardPage() {
     fetchRecentTransactions();
   }, [fetchRecentTransactions]);
 
-  // Show verification modal when user needs to complete identity verification
+  // Fetch verification status so we can gate wallet/quick actions when not verified
+  useEffect(() => {
+    getMe()
+      .then((user) => setVerified(user.verified === true))
+      .catch(() => setVerified(false));
+  }, []);
+
+  // Show verification modal when user needs to complete identity verification (e.g. after login/set-pin)
   useEffect(() => {
     if (typeof sessionStorage === "undefined") return;
     const show = sessionStorage.getItem(STORAGE_KEYS.SHOW_VERIFICATION_MODAL) === "true";
     setVerificationModalOpen(show);
   }, []);
+
+  const requireVerified = (action: () => void) => () => {
+    if (verified !== true) setVerificationModalOpen(true);
+    else action();
+  };
 
   const handleStartVerification = () => {
     if (typeof sessionStorage !== "undefined") {
@@ -106,17 +124,22 @@ export default function DashboardPage() {
     router.push("/dashboard/verify");
   };
 
-  // Open bill payment modal from nav (Pay submenu → /dashboard?pay=...)
+  // Open bill payment modal from nav (Pay submenu → /dashboard?pay=...) – or verification if not verified
   useEffect(() => {
     const pay = searchParams.get("pay");
     if (!pay || pay === "exam-pin") return;
+    if (verified !== true) {
+      setVerificationModalOpen(true);
+      router.replace("/dashboard", { scroll: false });
+      return;
+    }
     if (pay === "data") setDataModalOpen(true);
     else if (pay === "airtime") setAirtimeModalOpen(true);
     else if (pay === "electricity") setElectricityModalOpen(true);
     else if (pay === "tv") setTvModalOpen(true);
     else if (pay === "betting") setBettingModalOpen(true);
     router.replace("/dashboard", { scroll: false });
-  }, [searchParams, router]);
+  }, [searchParams, router, verified]);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -125,14 +148,14 @@ export default function DashboardPage() {
         totalBalance={walletBalance}
         balanceVisible={balanceVisible}
         onToggleBalanceVisibility={() => setBalanceVisible(!balanceVisible)}
-        onAddFundsClick={() => setAddFundsModalOpen(true)}
-        onTransferClick={() => setTransferChoiceOpen(true)}
+        onAddFundsClick={requireVerified(() => setAddFundsModalOpen(true))}
+        onTransferClick={requireVerified(() => setTransferChoiceOpen(true))}
       />
       <QuickActionsSection
-        onAirtimeClick={() => setAirtimeModalOpen(true)}
-        onDataClick={() => setDataModalOpen(true)}
-        onAirtimeToCashClick={() => setAirtimeToCashModalOpen(true)}
-        onMoreClick={() => setMoreModalOpen(true)}
+        onAirtimeClick={requireVerified(() => setAirtimeModalOpen(true))}
+        onDataClick={requireVerified(() => setDataModalOpen(true))}
+        onAirtimeToCashClick={requireVerified(() => setAirtimeToCashModalOpen(true))}
+        onMoreClick={requireVerified(() => setMoreModalOpen(true))}
       />
       <RecentTransactionsSection
         transactions={recentTransactions}
@@ -197,9 +220,9 @@ export default function DashboardPage() {
       <MoreModal
         open={moreModalOpen}
         onClose={() => setMoreModalOpen(false)}
-        onElectricityClick={() => setElectricityModalOpen(true)}
-        onTvClick={() => setTvModalOpen(true)}
-        onBettingClick={() => setBettingModalOpen(true)}
+        onElectricityClick={requireVerified(() => setElectricityModalOpen(true))}
+        onTvClick={requireVerified(() => setTvModalOpen(true))}
+        onBettingClick={requireVerified(() => setBettingModalOpen(true))}
       />
       <ElectricityModal
         open={electricityModalOpen}
