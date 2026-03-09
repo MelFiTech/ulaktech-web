@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+/* Light theme (default) */
+:root {
+  color-scheme: light dark;
+  --background: #FCFCFC;
+  --surface: #FFFFFF;
+  --text: #1A1A1A;
+  --textSecondary: #6B6B6B;
+  --border: #E0E0E0;
+  --error: #DC2626;
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --tint: #DC5746;
+  --tabIconDefault: #9CA3AF;
+  --tabIconSelected: #DC5746;
+  /* Aliases for existing usage */
+  --foreground: var(--text);
+  --primary: var(--tint);
+  --accent: #F5BE47;
+  --text-muted: var(--textSecondary);
+  --text-subtle: #6B6B6B;
+  --border-strong: #D0D0D0;
+}
+
+/* Dark theme (manual or system) */
+html.dark {
+  --background: #0B0B0B;
+  --surface: #1F1F24;
+  --text: #FFFFFF;
+  --textSecondary: #A1A1AA;
+  --border: #2F2F35;
+  --error: #EF4444;
+  --success: #22C55E;
+  --warning: #FBBF24;
+  --tint: #E56B5A;
+  --tabIconDefault: #6B7280;
+  --tabIconSelected: #E56B5A;
+  --foreground: var(--text);
+  --primary: var(--tint);
+  --text-muted: var(--textSecondary);
+  --text-subtle: #A1A1AA;
+  --border-strong: #3F3F45;
+}
+
+/* Explicit light (when user selects light via theme switch) */
+html.light {
+  --background: #FCFCFC;
+  --surface: #FFFFFF;
+  --text: #1A1A1A;
+  --textSecondary: #6B6B6B;
+  --border: #E0E0E0;
+  --error: #DC2626;
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --tint: #DC5746;
+  --tabIconDefault: #9CA3AF;
+  --tabIconSelected: #DC5746;
+  --foreground: var(--text);
+  --primary: var(--tint);
+  --text-muted: var(--textSecondary);
+  --text-subtle: #6B6B6B;
+  --border-strong: #D0D0D0;
+}
+
+/* Device preference when no manual theme class */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not(.dark) {
+    --background: #0B0B0B;
+    --surface: #1F1F24;
+    --text: #FFFFFF;
+    --textSecondary: #A1A1AA;
+    --border: #2F2F35;
+    --error: #EF4444;
+    --success: #22C55E;
+    --warning: #FBBF24;
+    --tint: #E56B5A;
+    --tabIconDefault: #6B7280;
+    --tabIconSelected: #E56B5A;
+    --foreground: var(--text);
+    --primary: var(--tint);
+    --text-muted: var(--textSecondary);
+    --text-subtle: #A1A1AA;
+    --border-strong: #3F3F45;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-text: var(--text);
+  --color-textSecondary: var(--textSecondary);
+  --color-primary: var(--primary);
+  --color-tint: var(--tint);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-error: var(--error);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-tabIconDefault: var(--tabIconDefault);
+  --color-tabIconSelected: var(--tabIconSelected);
+  --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* No focus outline/ring on click - avoids border around focused items */
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Section layout: 60px from device edges on desktop, consistent with header */
+.section-container {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+@media (min-width: 640px) {
+  .section-container {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+@media (min-width: 1024px) {
+  .section-container {
+    padding-left: 60px;
+    padding-right: 60px;
+  }
+}
