@@ -1,8 +1,10 @@
 /**
  * API client for Ulaktech backend.
  * Base URL: NEXT_PUBLIC_API_URL (e.g. http://localhost:2900)
- * All auth responses set cookies (access_token, refresh_token); use credentials: 'include'.
+ * Auth: cookies (credentials: 'include') and/or Authorization: Bearer when token is in session (cross-origin).
  */
+
+import { getAccessToken } from "@/lib/profileStorage";
 
 const getBaseUrl = (): string => {
   const raw = process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -35,8 +37,10 @@ export async function apiFetch<T = unknown>(
 ): Promise<T> {
   const url = getApiUrl(path);
   const { method = "GET", headers: optHeaders, body, ...rest } = options;
+  const token = getAccessToken();
   const headers: HeadersInit = {
     "Content-Type": "application/json",
+    ...(token && { Authorization: `Bearer ${token}` }),
     ...optHeaders,
   };
   let res: Response;

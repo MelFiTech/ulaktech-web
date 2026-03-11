@@ -17,7 +17,12 @@ export const STORAGE_KEYS = {
   SHOW_VERIFICATION_MODAL: "ulaktech_show_verification_modal",
   /** Session only: access token for set-pin step after OTP (cleared after use). */
   PIN_SET_TOKEN: "ulaktech_pin_set_token",
+  /** Session only: JWT access token for API auth when cross-origin cookies are not sent. */
+  ACCESS_TOKEN: "ulaktech_access_token",
 } as const;
+
+/** In-memory token so the very next request after login has the token (avoids race with sessionStorage on nav). */
+let _accessTokenMemory: string | null = null;
 
 const LOGOUT_CLEAR_KEYS = [
   STORAGE_KEYS.AVATAR_URI,
@@ -35,6 +40,20 @@ const LOGOUT_CLEAR_KEYS = [
 export function clearSessionStorage() {
   if (typeof window === "undefined") return;
   LOGOUT_CLEAR_KEYS.forEach((key) => localStorage.removeItem(key));
+  _accessTokenMemory = null;
+  sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+}
+
+export function getAccessToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return _accessTokenMemory ?? sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+}
+
+export function setAccessToken(token: string | null) {
+  if (typeof window === "undefined") return;
+  _accessTokenMemory = token;
+  if (token) sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
+  else sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
 }
 
 export function getStoredAvatarUri(): string | null {

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
-import { STORAGE_KEYS } from "@/lib/profileStorage";
+import { STORAGE_KEYS, setAccessToken } from "@/lib/profileStorage";
 import { register as apiRegister, otpSend, otpVerify } from "@/lib/api/auth";
 
 const STEPS = [
@@ -81,6 +81,7 @@ export default function RegisterPage() {
         if (result.user.hasSetPin !== true) {
           if (typeof sessionStorage !== "undefined" && result.accessToken) {
             sessionStorage.setItem(STORAGE_KEYS.PIN_SET_TOKEN, result.accessToken);
+            setAccessToken(result.accessToken);
             router.push("/onboarding/set-pin");
           } else {
             toast("Something went wrong. Please try again or sign in.", "error");
@@ -91,6 +92,9 @@ export default function RegisterPage() {
           if (typeof sessionStorage !== "undefined") {
             sessionStorage.setItem(STORAGE_KEYS.SHOW_VERIFICATION_MODAL, "true");
           }
+        }
+        if (typeof sessionStorage !== "undefined" && result.accessToken) {
+          setAccessToken(result.accessToken);
         }
         router.push("/dashboard");
       } catch (err) {
